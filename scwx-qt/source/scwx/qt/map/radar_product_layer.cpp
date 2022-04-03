@@ -157,88 +157,43 @@ void RadarProductLayer::UpdateSweep()
    std::shared_ptr<view::RadarProductView> radarProductView =
       context()->radarProductView_;
 
-   const std::vector<float>& vertices = radarProductView->vertices();
-
    // Bind a vertex array object
    gl.glBindVertexArray(p->vao_);
 
    // Buffer vertices
-   gl.glBindBuffer(GL_ARRAY_BUFFER, p->vbo_[0]);
    timer.start();
-   gl.glBufferData(GL_ARRAY_BUFFER,
-                   vertices.size() * sizeof(GLfloat),
-                   vertices.data(),
-                   GL_STATIC_DRAW);
+   p->numVertices_ = radarProductView->GlBufferVertices(gl, p->vbo_[0], 0);
    timer.stop();
+   gl.glEnableVertexAttribArray(0);
+
    BOOST_LOG_TRIVIAL(debug)
       << logPrefix_ << "Vertices buffered in " << timer.format(6, "%ws");
 
-   gl.glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, static_cast<void*>(0));
-   gl.glEnableVertexAttribArray(0);
-
    // Buffer data moments
-   const GLvoid* data;
-   GLsizeiptr    dataSize;
-   size_t        componentSize;
-   GLenum        type;
-
-   std::tie(data, dataSize, componentSize) = radarProductView->GetMomentData();
-
-   if (componentSize == 1)
-   {
-      type = GL_UNSIGNED_BYTE;
-   }
-   else
-   {
-      type = GL_UNSIGNED_SHORT;
-   }
-
-   gl.glBindBuffer(GL_ARRAY_BUFFER, p->vbo_[1]);
    timer.start();
-   gl.glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+   radarProductView->GlBufferMomentData(gl, p->vbo_[1], 1);
    timer.stop();
+   gl.glEnableVertexAttribArray(1);
+
    BOOST_LOG_TRIVIAL(debug)
       << logPrefix_ << "Data moments buffered in " << timer.format(6, "%ws");
 
-   gl.glVertexAttribIPointer(1, 1, type, 0, static_cast<void*>(0));
-   gl.glEnableVertexAttribArray(1);
-
    // Buffer CFP data
-   const GLvoid* cfpData;
-   GLsizeiptr    cfpDataSize;
-   size_t        cfpComponentSize;
-   GLenum        cfpType;
+   timer.start();
+   bool cfpPresent = radarProductView->GlBufferCfpMomentData(gl, p->vbo_[2], 2);
+   timer.stop();
 
-   std::tie(cfpData, cfpDataSize, cfpComponentSize) =
-      radarProductView->GetCfpMomentData();
-
-   if (cfpData != nullptr)
+   if (cfpPresent)
    {
-      if (cfpComponentSize == 1)
-      {
-         cfpType = GL_UNSIGNED_BYTE;
-      }
-      else
-      {
-         cfpType = GL_UNSIGNED_SHORT;
-      }
-
-      gl.glBindBuffer(GL_ARRAY_BUFFER, p->vbo_[2]);
-      timer.start();
-      gl.glBufferData(GL_ARRAY_BUFFER, cfpDataSize, cfpData, GL_STATIC_DRAW);
-      timer.stop();
       BOOST_LOG_TRIVIAL(debug)
          << logPrefix_ << "CFP moments buffered in " << timer.format(6, "%ws");
 
-      gl.glVertexAttribIPointer(2, 1, cfpType, 0, static_cast<void*>(0));
       gl.glEnableVertexAttribArray(2);
    }
    else
    {
       gl.glDisableVertexAttribArray(2);
    }
-
-   p->numVertices_ = vertices.size() / 2;
 }
 
 void RadarProductLayer::Render(

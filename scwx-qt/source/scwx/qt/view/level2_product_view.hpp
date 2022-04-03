@@ -49,6 +49,15 @@ public:
    std::tuple<const void*, size_t, size_t> GetMomentData() const override;
    std::tuple<const void*, size_t, size_t> GetCfpMomentData() const override;
 
+   size_t
+   GlBufferVertices(gl::OpenGLFunctions& gl, GLuint vbo, GLuint index) override;
+   void GlBufferMomentData(gl::OpenGLFunctions& gl,
+                           GLuint               vbo,
+                           GLuint               index) override;
+   bool GlBufferCfpMomentData(gl::OpenGLFunctions& gl,
+                              GLuint               vbo,
+                              GLuint               index) override;
+
    static std::shared_ptr<Level2ProductView>
    Create(common::Level2Product                         product,
           float                                         elevation,

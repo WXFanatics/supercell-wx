@@ -633,6 +633,68 @@ void Level2ProductView::ComputeSweep()
    UpdateColorTable();
 }
 
+size_t Level2ProductView::GlBufferVertices(gl::OpenGLFunctions& gl,
+                                           GLuint               vbo,
+                                           GLuint               index)
+{
+   gl.glBindBuffer(GL_ARRAY_BUFFER, vbo);
+   gl.glBufferData(GL_ARRAY_BUFFER,
+                   p->vertices_.size() * sizeof(GLfloat),
+                   p->vertices_.data(),
+                   GL_STATIC_DRAW);
+
+   gl.glVertexAttribPointer(
+      index, 2, GL_FLOAT, GL_FALSE, 0, static_cast<void*>(0));
+
+   return p->vertices_.size() / 2;
+}
+
+void Level2ProductView::GlBufferMomentData(gl::OpenGLFunctions& gl,
+                                           GLuint               vbo,
+                                           GLuint               index)
+{
+   GLenum type;
+
+   auto [data, dataSize, componentSize] = GetMomentData();
+
+   if (componentSize == 1)
+   {
+      type = GL_UNSIGNED_BYTE;
+   }
+   else
+   {
+      type = GL_UNSIGNED_SHORT;
+   }
+
+   gl.glBindBuffer(GL_ARRAY_BUFFER, vbo);
+   gl.glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+
+   gl.glVertexAttribIPointer(index, 1, type, 0, static_cast<void*>(0));
+}
+
+bool Level2ProductView::GlBufferCfpMomentData(gl::OpenGLFunctions& gl,
+                                              GLuint               vbo,
+                                              GLuint               index)
+{
+   bool cfpPresent = false;
+
+   if (p->cfpMoments_.size() > 0)
+   {
+      cfpPresent = true;
+
+      gl.glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      gl.glBufferData(GL_ARRAY_BUFFER,
+                      p->cfpMoments_.size() * sizeof(uint8_t),
+                      p->cfpMoments_.data(),
+                      GL_STATIC_DRAW);
+
+      gl.glVertexAttribIPointer(
+         index, 1, GL_UNSIGNED_BYTE, 0, static_cast<void*>(0));
+   }
+
+   return cfpPresent;
+}
+
 std::shared_ptr<Level2ProductView> Level2ProductView::Create(
    common::Level2Product                         product,
    float                                         elevation,

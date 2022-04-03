@@ -2,6 +2,7 @@
 
 #include <scwx/common/color_table.hpp>
 #include <scwx/common/products.hpp>
+#include <scwx/qt/gl/gl.hpp>
 
 #include <chrono>
 #include <memory>
@@ -40,13 +41,20 @@ public:
    LoadColorTable(std::shared_ptr<common::ColorTable> colorTable) = 0;
    virtual void SelectElevation(float elevation);
    virtual void SelectTime(std::chrono::system_clock::time_point time) = 0;
-   virtual void Update() = 0;
+   virtual void Update()                                               = 0;
 
    virtual common::RadarProductGroup GetRadarProductGroup() const = 0;
    virtual std::string               GetRadarProductName() const  = 0;
    virtual std::vector<float>        GetElevationCuts() const;
    virtual std::tuple<const void*, size_t, size_t> GetMomentData() const = 0;
    virtual std::tuple<const void*, size_t, size_t> GetCfpMomentData() const;
+
+   virtual size_t
+   GlBufferVertices(gl::OpenGLFunctions& gl, GLuint vbo, GLuint index) = 0;
+   virtual void
+   GlBufferMomentData(gl::OpenGLFunctions& gl, GLuint vbo, GLuint index) = 0;
+   virtual bool
+   GlBufferCfpMomentData(gl::OpenGLFunctions& gl, GLuint vbo, GLuint index);
 
 protected:
    virtual void UpdateColorTable() = 0;

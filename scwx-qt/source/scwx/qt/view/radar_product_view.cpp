@@ -85,6 +85,13 @@ RadarProductView::GetCfpMomentData() const
    return std::tie(data, dataSize, componentSize);
 }
 
+bool RadarProductView::GlBufferCfpMomentData(gl::OpenGLFunctions& gl,
+                                             GLuint               vbo,
+                                             GLuint               index)
+{
+   return false;
+}
+
 void RadarProductView::ComputeSweep()
 {
    BOOST_LOG_TRIVIAL(debug) << logPrefix_ << "ComputeSweep()";
