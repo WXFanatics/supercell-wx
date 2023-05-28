@@ -288,6 +288,18 @@ MainWindow::~MainWindow()
    delete ui;
 }
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+   // Hide the main window, since we are done with it
+   hide();
+
+   // Stop any background threads prior to actually closing the window
+   Application::StopThreadPool();
+
+   // Invoke Base class functionality
+   QMainWindow::closeEvent(event);
+}
+
 void MainWindow::showEvent(QShowEvent* event)
 {
    QMainWindow::showEvent(event);

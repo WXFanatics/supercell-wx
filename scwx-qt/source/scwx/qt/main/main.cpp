@@ -1,13 +1,12 @@
 #include <scwx/qt/config/radar_site.hpp>
+#include <scwx/qt/main/application.hpp>
 #include <scwx/qt/main/main_window.hpp>
 #include <scwx/qt/manager/radar_product_manager.hpp>
 #include <scwx/qt/manager/resource_manager.hpp>
 #include <scwx/qt/manager/settings_manager.hpp>
 #include <scwx/util/logger.hpp>
-#include <scwx/util/threads.hpp>
 
 #include <aws/core/Aws.h>
-#include <boost/asio.hpp>
 #include <spdlog/spdlog.h>
 #include <QApplication>
 #include <QTranslator>
@@ -35,26 +34,7 @@ int main(int argc, char* argv[])
    }
 
    // Start the io_context main loop
-   boost::asio::io_context& ioContext = scwx::util::io_context();
-   auto                     work      = boost::asio::make_work_guard(ioContext);
-   boost::asio::thread_pool threadPool {4};
-   boost::asio::post(threadPool,
-                     [&]()
-                     {
-                        while (true)
-                        {
-                           try
-                           {
-                              ioContext.run();
-                              break; // run() exited normally
-                           }
-                           catch (std::exception& ex)
-                           {
-                              // Log exception and continue
-                              logger_->error(ex.what());
-                           }
-                        }
-                     });
+   scwx::qt::main::Application::StartThreadPool();
 
    // Initialize AWS SDK
    Aws::SDKOptions awsSdkOptions;
@@ -75,10 +55,6 @@ int main(int argc, char* argv[])
 
    // Deinitialize application
    scwx::qt::manager::RadarProductManager::Cleanup();
-
-   // Gracefully stop the io_context main loop
-   work.reset();
-   threadPool.join();
 
    // Shutdown application
    scwx::qt::manager::ResourceManager::Shutdown();

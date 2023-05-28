@@ -12,6 +12,9 @@ namespace Application
 void FinishInitialization();
 void WaitForInitialization();
 
+void StartThreadPool();
+void StopThreadPool();
+
 } // namespace Application
 } // namespace main
 } // namespace qt

@@ -28,6 +28,9 @@ public:
 
    void showEvent(QShowEvent* event) override;
 
+protected:
+   void closeEvent(QCloseEvent* event) override;
+
 signals:
    void ActiveMapMoved(double latitude, double longitude);
 
